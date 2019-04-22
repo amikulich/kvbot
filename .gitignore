@@ -1,0 +1,22 @@
+# User-specific files
+*.suo
+*.user
+*.sln.docstates
+*.ide
+
+# Build results
+x64/
+x86/
+build/
+bld/
+[Bb]in/
+[Oo]bj/
+
+.vs/**/*
+.idea/
+sqlite3/*
+packages/*
+/KvBot/.vs/config/applicationhost.config
+/KvBot/.vs/KvBot/v15/Server/sqlite3/db.lock
+/KvBot/.vs/KvBot/v15/Server/sqlite3/storage.ide-shm
+/KvBot/.vs/KvBot/v15/Server/sqlite3/storage.ide-wal

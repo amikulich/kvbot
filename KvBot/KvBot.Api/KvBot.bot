@@ -1,0 +1,18 @@
+{
+  "name": "kvbot",
+  "description": "",
+  "services": [
+    {
+      "type": "endpoint",
+      "appId": "",
+      "appPassword": "",
+      "endpoint": "http://localhost:3978/api/messages",
+      "id": "baaa6060-6539-11e9-9528-fbbf08ebaa02",
+      "name": "development"
+    }
+  ],
+  "padlock": "",
+  "version": "2.0",
+  "overrides": null,
+  "path": "C:\\Projects\\kvbot\\KvBot\\KvBot.Api\\KvBot.bot"
+}
