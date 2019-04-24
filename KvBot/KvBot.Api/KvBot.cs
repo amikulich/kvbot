@@ -89,7 +89,7 @@ namespace KvBot.Api
 
                 //// Echo back to the user whatever they typed.
                 //var responseMessage = $"Turn {state.TurnCount}: You sent '{turnContext.Activity.Text}'\n";
-                await turnContext.SendActivityAsync(message);
+                await turnContext.SendActivityAsync(message ?? "I don't understand");
             }
             else
             {
