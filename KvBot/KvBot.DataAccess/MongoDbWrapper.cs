@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
+using System.Threading.Tasks;
 using MongoDB.Bson;
 using MongoDB.Driver;
 
@@ -9,8 +10,8 @@ namespace KvBot.DataAccess
 {
     internal class MongoDriverWrapper : IDisposable
     {
-        static readonly IMongoClient _client = new MongoClient("mongodb://f1bot:1qaz!QAZ@ds050539.mlab.com:50539/f1bot-db");
-        static readonly IMongoDatabase _database = _client.GetDatabase("f1bot-db");
+        static readonly IMongoClient Client = new MongoClient("mongodb://f1bot:1qaz!QAZ@ds050539.mlab.com:50539/f1bot-db");
+        static readonly IMongoDatabase Database = Client.GetDatabase("f1bot-db");
 
         public void Dispose()
         {
@@ -18,24 +19,24 @@ namespace KvBot.DataAccess
 
         public IQueryable<T> All<T>() where T : MapBase, new()
         {
-            return _database.GetCollection<T>(GetDocumentNameFromType(typeof(T)))
+            return Database.GetCollection<T>(GetDocumentNameFromType(typeof(T)))
                 .AsQueryable();
         }
 
-        public void Save<T>(T item) where T : MapBase, new()
+        public async Task SaveAsync<T>(T item) where T : MapBase, new()
         {
-            var collection = _database.GetCollection<T>(GetDocumentNameFromType(typeof(T)));
+            var collection = Database.GetCollection<T>(GetDocumentNameFromType(typeof(T)));
 
             var filter = Builders<T>.Filter.Eq(x => x.Id, item.Id);
             var result = collection.Find(filter);
 
             if (result.Any())
             {
-                collection.ReplaceOne(filter, item);
+                await collection.ReplaceOneAsync(filter, item);
             }
             else
             {
-                collection.InsertOne(item);
+                await collection.InsertOneAsync(item);
             }
         }
 

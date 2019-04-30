@@ -1,10 +1,11 @@
 ﻿using System;
 using System.Linq;
+using KvBot.DataAccess.Contract;
 using KvBot.DataAccess.Mappings;
 
 namespace KvBot.DataAccess
 {
-    public class PredefinedCommandsQuery
+    public class PredefinedCommandsQuery : IPredefinedCommandQuery
     {
         private static readonly Random Random = new Random();
 
