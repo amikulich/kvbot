@@ -1,13 +1,11 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Text;
+﻿using System.Collections.Generic;
 
 namespace KvBot.DataAccess.Mappings
 {
-    [Document(Name = "predefined_command")]
-    internal class PredefinedCommandMap : MapBase
+    [Document(Name = "key-key-value")]
+    internal class KeyKeyValue : MapBase
     {
-        public PredefinedCommandMap()
+        public KeyKeyValue()
         {
             Keys = new List<string>();
             AlternativeResponses = new List<string>();

@@ -1,31 +1,37 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.Linq;
-using System.Text;
 using System.Threading.Tasks;
 using MongoDB.Bson;
 using MongoDB.Driver;
 
 namespace KvBot.DataAccess
 {
-    internal class MongoDriverWrapper : IDisposable
+    public interface IDbContext
     {
-        static readonly IMongoClient Client = new MongoClient("mongodb://f1bot:1qaz!QAZ@ds050539.mlab.com:50539/f1bot-db");
-        static readonly IMongoDatabase Database = Client.GetDatabase("f1bot-db");
+        IQueryable<T> All<T>() where T : MapBase, new();
 
-        public void Dispose()
+        Task SaveAsync<T>(T item) where T : MapBase, new();
+    }
+
+    public class DbContext : IDbContext
+    {
+        private readonly IMongoDatabase _database;// = Client.GetDatabase("uat-kvbot");
+
+        public DbContext(string connectionString, string database)
         {
+            IMongoClient client = new MongoClient(connectionString);
+            _database = client.GetDatabase(database);
         }
 
         public IQueryable<T> All<T>() where T : MapBase, new()
         {
-            return Database.GetCollection<T>(GetDocumentNameFromType(typeof(T)))
+            return _database.GetCollection<T>(GetDocumentNameFromType(typeof(T)))
                 .AsQueryable();
         }
 
         public async Task SaveAsync<T>(T item) where T : MapBase, new()
         {
-            var collection = Database.GetCollection<T>(GetDocumentNameFromType(typeof(T)));
+            var collection = _database.GetCollection<T>(GetDocumentNameFromType(typeof(T)));
 
             var filter = Builders<T>.Filter.Eq(x => x.Id, item.Id);
             var result = collection.Find(filter);
@@ -54,7 +60,7 @@ namespace KvBot.DataAccess
         }
     }
 
-    internal abstract class MapBase
+    public abstract class MapBase
     {
         protected MapBase()
         {

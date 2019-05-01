@@ -5,16 +5,16 @@ namespace KvBot.Api
     public class KkvBuildingState
     {
         private readonly List<string> _keys;
-        private string _value;
 
         public KkvBuildingState()
         {
             _keys = new List<string>();
+            Value = string.Empty;
         }
 
         public void SetValue(string value)
         {
-            _value = value;
+            Value = value;
         }
 
         public void SetKeys(string[] keys)
@@ -24,17 +24,17 @@ namespace KvBot.Api
 
         public ICollection<string> Keys => _keys;
 
-        public string Value => _value;
+        public string Value { get; set; }
 
         public bool IsTransient()
         {
-            return string.IsNullOrEmpty(_value)
+            return string.IsNullOrEmpty(Value)
                    && _keys?.Count == 0;
         }
 
         public bool IsCommitable()
         {
-            return !string.IsNullOrEmpty(_value)
+            return !string.IsNullOrEmpty(Value)
                    && _keys?.Count > 0;
         }
     }

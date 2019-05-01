@@ -80,6 +80,7 @@ namespace KvBot.Api
 
             if (turnContext.Activity.Text.StartsWith("kv ", StringComparison.OrdinalIgnoreCase))
             {
+                await _accessors.ConversationState.LoadAsync(turnContext);
                 var state = await _accessors.KvvBuildingState.GetAsync(turnContext, () => new KkvBuildingState());
                 if (_kkvService.TryParse(turnContext.Activity.Text.Substring("kv ".Length), out (string scope, string value, string[] keys) kkv,
                     out (KkvParserCodes code, string message) operationResult))
@@ -101,7 +102,11 @@ namespace KvBot.Api
 
                 if (state.IsCommitable())
                 {
-                    await _kkvService.SaveAsync("private", kkv.value, kkv.keys.ToList());
+                    await _kkvService.SaveAsync("private", state.Value, state.Keys.ToList());
+
+                    await _accessors.KvvBuildingState.DeleteAsync(turnContext);
+                    await _accessors.ConversationState.ClearStateAsync(turnContext);
+
                     await turnContext.SendActivityAsync(message ?? "Saved");
                     return;
                 }

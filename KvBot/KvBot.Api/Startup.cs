@@ -1,4 +1,5 @@
 ﻿using KvBot.Api.BotServices;
+using KvBot.Api.DbConfiguration;
 using KvBot.DataAccess;
 using KvBot.DataAccess.Contract;
 using Microsoft.AspNetCore.Builder;
@@ -32,8 +33,7 @@ namespace KvBot
 
         public void ConfigureServices(IServiceCollection services)
         {
-            services.AddScoped<IPredefinedCommandQuery, PredefinedCommandsQuery>();
-            services.AddScoped<IKkvWriteCommand, KkvWriteCommand>();
+            ConfigureDataAccess(services);
 
             services.AddScoped<ISimpleResolver, SimpleResolver>();
             services.AddScoped<IKkvService, KkvService>();
@@ -58,6 +58,17 @@ namespace KvBot
                    await context.SendActivityAsync("Sorry, it looks like something went wrong.");
                };
            });
+        }
+
+        private void ConfigureDataAccess(IServiceCollection services)
+        {
+            var mongo = Configuration.GetSection("MongoConfiguration").Get<MongoConfiguration>();
+            var connectionString = $"mongodb://{mongo.User}:{mongo.Password}@{mongo.Endpoint}/{mongo.Database}";
+
+            services.AddSingleton<IDbContext, DbContext>((s) => new DbContext(connectionString, mongo.Database));
+
+            services.AddScoped<IPredefinedCommandQuery, PredefinedCommandsQuery>();
+            services.AddScoped<IKkvWriteCommand, KkvWriteCommand>();
         }
 
         public void Configure(IApplicationBuilder app, IHostingEnvironment env, ILoggerFactory loggerFactory)
