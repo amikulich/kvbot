@@ -12,13 +12,13 @@ namespace KvBot.Api
 {
     public class KvBot : IBot
     {
-        private readonly ISimpleResolver _simpleResolver;
         private readonly IKkvService _kkvService;
         private readonly KvBotAccessors _accessors;
         private readonly ILogger _logger;
 
+        private const string KvCommand = "kv ";
+
         public KvBot(ConversationState conversationState, 
-            ISimpleResolver simpleResolver,
             IKkvService kkvService,
             ILoggerFactory loggerFactory)
         {
@@ -32,12 +32,11 @@ namespace KvBot.Api
                 throw new System.ArgumentNullException(nameof(loggerFactory));
             }
 
-            _simpleResolver = simpleResolver;
             _kkvService = kkvService;
 
             _accessors = new KvBotAccessors(conversationState)
             {
-                KvvBuildingState = conversationState.CreateProperty<KkvBuildingState>(KvBotAccessors.KvvBuildingStateName),
+                KkvBuildingState = conversationState.CreateProperty<KkvBuildingState>(KvBotAccessors.KkvBuildingStateName),
             };
 
             _logger = loggerFactory.CreateLogger<KvBot>();
@@ -72,29 +71,29 @@ namespace KvBot.Api
 
         private async Task ProcessMessage(ITurnContext turnContext)
         {
-            if (_simpleResolver.TryResolve(turnContext.Activity, out string message))
+            if (_kkvService.TryFindByKey(turnContext.Activity.Text, turnContext.Activity.From.Id, out string message))
             {
                 await turnContext.SendActivityAsync(message);
                 return;
             }
 
-            if (turnContext.Activity.Text.StartsWith("kv ", StringComparison.OrdinalIgnoreCase))
+            if (turnContext.Activity.Text.StartsWith(KvCommand, StringComparison.OrdinalIgnoreCase))
             {
-                await _accessors.ConversationState.LoadAsync(turnContext);
-                var state = await _accessors.KvvBuildingState.GetAsync(turnContext, () => new KkvBuildingState());
-                if (_kkvService.TryParse(turnContext.Activity.Text.Substring("kv ".Length), out (string scope, string value, string[] keys) kkv,
-                    out (KkvParserCodes code, string message) operationResult))
+                var state = await _accessors.KkvBuildingState.GetAsync(turnContext, () => new KkvBuildingState());
+                if (_kkvService.TryParse(turnContext.Activity.Text.Substring(KvCommand.Length), out (KkvScope scope, string value, string[] keys) kkv,
+                    out (KkvParseResult code, string message) operationResult))
                 {
-                    if (operationResult.code == KkvParserCodes.KeysAndValue)
+                    if (operationResult.code == KkvParseResult.KeysAndValue)
                     {
+                        state.SetScope(kkv.scope);
                         state.SetKeys(kkv.keys);
                         state.SetValue(kkv.value);
                     }
-                    else if (operationResult.code == KkvParserCodes.KeysOnly)
+                    else if (operationResult.code == KkvParseResult.KeysOnly)
                     {
                         state.SetKeys(kkv.keys);
                     }
-                    else if (operationResult.code == KkvParserCodes.ValueOnly)
+                    else if (operationResult.code == KkvParseResult.ValueOnly)
                     {
                         state.SetValue(kkv.value);
                     }
@@ -102,24 +101,26 @@ namespace KvBot.Api
 
                 if (state.IsCommitable())
                 {
-                    await _kkvService.SaveAsync("private", state.Value, state.Keys.ToList());
+                    await _kkvService.SaveAsync(state.Scope == KkvScope.Private ? turnContext.Activity.From.Id : null, 
+                        state.Value, 
+                        state.Keys.ToList());
 
-                    await _accessors.KvvBuildingState.DeleteAsync(turnContext);
+                    await _accessors.KkvBuildingState.DeleteAsync(turnContext);
                     await _accessors.ConversationState.ClearStateAsync(turnContext);
 
-                    await turnContext.SendActivityAsync(message ?? "Saved");
+                    await turnContext.SendActivityAsync("Saved");
                     return;
                 }
             
                 if (!state.IsTransient())
                 {
-                    await _accessors.KvvBuildingState.SetAsync(turnContext, state);
+                    await _accessors.KkvBuildingState.SetAsync(turnContext, state);
                     await _accessors.ConversationState.SaveChangesAsync(turnContext);
                     return;
                 }
             }
 
-            await turnContext.SendActivityAsync(message ?? "I don't understand");
+            await turnContext.SendActivityAsync("Sorry, I don't understand. Consider typing help");
         }
 
         private static ThumbnailCard BuildCard(string title, string imageUrl, string description, string playCommand, string rulesCommand)

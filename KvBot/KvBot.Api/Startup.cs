@@ -35,7 +35,6 @@ namespace KvBot
         {
             ConfigureDataAccess(services);
 
-            services.AddScoped<ISimpleResolver, SimpleResolver>();
             services.AddScoped<IKkvService, KkvService>();
 
             IStorage dataStore = new MemoryStorage();
@@ -67,7 +66,7 @@ namespace KvBot
 
             services.AddSingleton<IDbContext, DbContext>((s) => new DbContext(connectionString, mongo.Database));
 
-            services.AddScoped<IPredefinedCommandQuery, PredefinedCommandsQuery>();
+            services.AddScoped<IKkvFindCommand, KkvFindCommand>();
             services.AddScoped<IKkvWriteCommand, KkvWriteCommand>();
         }
 

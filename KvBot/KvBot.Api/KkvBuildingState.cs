@@ -1,4 +1,5 @@
 ﻿using System.Collections.Generic;
+using KvBot.Api.BotServices;
 
 namespace KvBot.Api
 {
@@ -6,10 +7,18 @@ namespace KvBot.Api
     {
         private readonly List<string> _keys;
 
+        public KkvScope Scope { get; set; }
+
         public KkvBuildingState()
         {
             _keys = new List<string>();
             Value = string.Empty;
+            Scope = KkvScope.Private;
+        }
+
+        public void SetScope(KkvScope scope)
+        {
+            Scope = scope;
         }
 
         public void SetValue(string value)

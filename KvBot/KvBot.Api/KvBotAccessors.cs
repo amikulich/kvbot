@@ -13,9 +13,9 @@ namespace KvBot.Api
             ConversationState = conversationState ?? throw new ArgumentNullException(nameof(conversationState));
         }
 
-        public static string KvvBuildingStateName { get; } = $"{nameof(KvBotAccessors)}.KvvBuildingState";
+        public static string KkvBuildingStateName { get; } = $"{nameof(KvBotAccessors)}.KkvBuildingState";
 
-        public IStatePropertyAccessor<KkvBuildingState> KvvBuildingState { get; set; }
+        public IStatePropertyAccessor<KkvBuildingState> KkvBuildingState { get; set; }
 
         public ConversationState ConversationState { get; }
     }

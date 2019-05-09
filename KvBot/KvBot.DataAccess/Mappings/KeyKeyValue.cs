@@ -16,5 +16,7 @@ namespace KvBot.DataAccess.Mappings
         public IEnumerable<string> Keys { get; set; }
 
         public IEnumerable<string> AlternativeResponses { get; set; }
+
+        public string Scope { get; set; }
     }
 }

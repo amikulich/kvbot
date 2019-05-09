@@ -5,6 +5,6 @@ namespace KvBot.DataAccess.Contract
 {
     public interface IKkvWriteCommand
     {
-        Task ExecuteAsync(string scope, string value, ICollection<string> keys);
+        Task ExecuteAsync(string userId, string value, ICollection<string> keys);
     }
 }

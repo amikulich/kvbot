@@ -8,14 +8,16 @@ namespace KvBot.DataAccess
 {
     public interface IDbContext
     {
-        IQueryable<T> All<T>() where T : MapBase, new();
+        IQueryable<T> AsQueryable<T>() where T : MapBase, new();
 
         Task SaveAsync<T>(T item) where T : MapBase, new();
+
+        Task DeleteAsync<T>(T item) where T : MapBase, new();
     }
 
     public class DbContext : IDbContext
     {
-        private readonly IMongoDatabase _database;// = Client.GetDatabase("uat-kvbot");
+        private readonly IMongoDatabase _database;
 
         public DbContext(string connectionString, string database)
         {
@@ -23,7 +25,7 @@ namespace KvBot.DataAccess
             _database = client.GetDatabase(database);
         }
 
-        public IQueryable<T> All<T>() where T : MapBase, new()
+        public IQueryable<T> AsQueryable<T>() where T : MapBase, new()
         {
             return _database.GetCollection<T>(GetDocumentNameFromType(typeof(T)))
                 .AsQueryable();
@@ -44,6 +46,13 @@ namespace KvBot.DataAccess
             {
                 await collection.InsertOneAsync(item);
             }
+        }
+
+        public async Task DeleteAsync<T>(T item) where T : MapBase, new()
+        {
+            var collection = _database.GetCollection<T>(GetDocumentNameFromType(typeof(T)));
+
+            await collection.DeleteOneAsync(x => x.Id == item.Id);
         }
 
         private string GetDocumentNameFromType(Type type)
